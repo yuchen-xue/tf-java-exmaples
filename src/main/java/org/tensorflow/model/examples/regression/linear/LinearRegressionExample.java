@@ -16,7 +16,6 @@
  */
 package org.tensorflow.model.examples.regression.linear;
 
-import java.util.List;
 import java.util.Random;
 import org.tensorflow.Graph;
 import org.tensorflow.Session;
@@ -39,7 +38,7 @@ import org.tensorflow.types.TFloat32;
  * <p>
  * Also, the weight and bias are extracted and printed.
  */
-public class LinearRegressionExample {
+public final class LinearRegressionExample {
     /**
      * Amount of data points.
      */
@@ -52,7 +51,7 @@ public class LinearRegressionExample {
     public static final String WEIGHT_VARIABLE_NAME = "weight";
     public static final String BIAS_VARIABLE_NAME = "bias";
 
-    public static void main(String[] args) {
+    public static void main() {
         // Prepare the data
         float[] xValues = {1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f};
         float[] yValues = new float[N];

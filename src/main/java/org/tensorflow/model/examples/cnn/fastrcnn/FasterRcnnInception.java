@@ -131,7 +131,7 @@ import org.tensorflow.types.TUint8;
  * faster_rcnn/inception_resnet_v2_1024x1024/1 to detect objects with a detection score greater than 0.3
  * Uses the DrawBounding boxes
  */
-public class FasterRcnnInception {
+public final class FasterRcnnInception {
 
     private final static String[] cocoLabels = new String[]{
             "person",

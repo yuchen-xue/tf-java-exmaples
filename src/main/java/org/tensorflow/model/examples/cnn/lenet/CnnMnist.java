@@ -57,7 +57,7 @@ import org.tensorflow.types.TUint8;
 /**
  * Builds a LeNet-5 style CNN for MNIST.
  */
-public class CnnMnist {
+public final class CnnMnist {
 
   private static final Logger logger = Logger.getLogger(CnnMnist.class.getName());
 

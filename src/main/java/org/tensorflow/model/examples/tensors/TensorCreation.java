@@ -26,9 +26,9 @@ import java.util.Arrays;
 /**
  * Creates a few tensors of ranks: 0, 1, 2, 3.
  */
-public class TensorCreation {
+public final class TensorCreation {
 
-    public static void main(String[] args) {
+    public static void main() {
         // Rank 0 Tensor
         TInt32 rank0Tensor = TInt32.scalarOf(42);
 

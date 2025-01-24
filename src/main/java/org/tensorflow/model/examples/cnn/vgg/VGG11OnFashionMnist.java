@@ -22,7 +22,7 @@ import org.tensorflow.model.examples.datasets.mnist.MnistDataset;
 /**
  * Trains and evaluates VGG'11 model on FashionMNIST dataset.
  */
-public class VGG11OnFashionMnist {
+public final class VGG11OnFashionMnist {
     // Hyper-parameters
     public static final int EPOCHS = 1;
     public static final int BATCH_SIZE = 500;
@@ -35,7 +35,7 @@ public class VGG11OnFashionMnist {
 
     private static final Logger logger = Logger.getLogger(VGG11OnFashionMnist.class.getName());
 
-    public static void main(String[] args) {
+    public static void main() {
         logger.info("Data loading.");
         MnistDataset dataset = MnistDataset.create(0, TRAINING_IMAGES_ARCHIVE, TRAINING_LABELS_ARCHIVE, TEST_IMAGES_ARCHIVE, TEST_LABELS_ARCHIVE);
 
