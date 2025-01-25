@@ -206,18 +206,38 @@ public final class FasterRcnnInception {
                     if (numDetects > 0) {
                         TFloat32 detectionBoxes = (TFloat32) outputTensorMap.get("detection_boxes").get();
                         TFloat32 detectionScores = (TFloat32) outputTensorMap.get("detection_scores").get();
+                        TFloat32 detectionClasses = (TFloat32) outputTensorMap.get("detection_classes").get();
                         ArrayList<FloatNdArray> boxArray = new ArrayList<>();
+
+                        // Initialize dynamic containers for collecting detection results
+                        ArrayList<ArrayList<Float>> boxFloatArray = new ArrayList<>();
+                        ArrayList<Float> scoreFloatArray = new ArrayList<> ();
+                        ArrayList<String> detectionClassArray = new ArrayList<> ();
+
                         //TODO tf.image.combinedNonMaxSuppression
                         for (int n = 0; n < numDetects; n++) {
                             //put probability and position in outputMap
                             float detectionScore = detectionScores.getFloat(0, n);
+                            float detectionClass = detectionClasses.getFloat(0, n);
                             //only include those classes with detection score greater than 0.3f
                             if (detectionScore > 0.3f) {
-                                boxArray.add(detectionBoxes.get(0, n));
+                                FloatNdArray detectionBox = detectionBoxes.get(0, n);
+                                boxArray.add(detectionBox);
+                                System.out.printf("Detection score: %f%n", detectionScore);
+                                System.out.printf("Detection class: %s%n", cocoArray[Math.round(detectionClass) - 1]);
+                                ArrayList<Float> singleBoxFloatArray = new ArrayList<>();
+                                for (int i = 0; i < detectionBox.shape().size(); i++) {
+                                    singleBoxFloatArray.add(detectionBox.getFloat(i));
+                                    System.out.printf("Detection boxes: %f%n", detectionBox.getFloat(i));
+                                }
+                                // Collect detection results
+                                boxFloatArray.add(singleBoxFloatArray);
+                                scoreFloatArray.add(detectionScore);
+                                detectionClassArray.add(cocoArray[Math.round(detectionClass) - 1]);
+                                System.out.println("----------------");
                             }
                         }
                         /* These values are also returned by the FasterRCNN, but we don't use them in this example.
-                         * TFloat32 detectionClasses = (TFloat32) outputTensorMap.get("detection_classes").get();
                          * TFloat32 rawDetectionBoxes = (TFloat32) outputTensorMap.get("raw_detection_boxes").get();
                          * TFloat32 rawDetectionScores = (TFloat32) outputTensorMap.get("raw_detection_scores").get();
                          * TFloat32 detectionAnchorIndices = (TFloat32) outputTensorMap.get("detection_anchor_indices").get();
