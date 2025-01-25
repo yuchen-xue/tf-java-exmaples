@@ -100,11 +100,15 @@ detection_classes: a tf.int tensor of shape [N] containing detection class index
 but again the actual tensor is DT_FLOAT according to saved_model_cli.
 */
 
-
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.tensorflow.Graph;
 import org.tensorflow.Operand;
@@ -134,101 +138,20 @@ import org.tensorflow.types.TUint8;
  */
 public final class FasterRcnnInception {
 
-    private final static String[] cocoLabels = new String[]{
-            "person",
-            "bicycle",
-            "car",
-            "motorcycle",
-            "airplane",
-            "bus",
-            "train",
-            "truck",
-            "boat",
-            "traffic light",
-            "fire hydrant",
-            "street sign",
-            "stop sign",
-            "parking meter",
-            "bench",
-            "bird",
-            "cat",
-            "dog",
-            "horse",
-            "sheep",
-            "cow",
-            "elephant",
-            "bear",
-            "zebra",
-            "giraffe",
-            "hat",
-            "backpack",
-            "umbrella",
-            "shoe",
-            "eye glasses",
-            "handbag",
-            "tie",
-            "suitcase",
-            "frisbee",
-            "skis",
-            "snowboard",
-            "sports ball",
-            "kite",
-            "baseball bat",
-            "baseball glove",
-            "skateboard",
-            "surfboard",
-            "tennis racket",
-            "bottle",
-            "plate",
-            "wine glass",
-            "cup",
-            "fork",
-            "knife",
-            "spoon",
-            "bowl",
-            "banana",
-            "apple",
-            "sandwich",
-            "orange",
-            "broccoli",
-            "carrot",
-            "hot dog",
-            "pizza",
-            "donut",
-            "cake",
-            "chair",
-            "couch",
-            "potted plant",
-            "bed",
-            "mirror",
-            "dining table",
-            "window",
-            "desk",
-            "toilet",
-            "door",
-            "tv",
-            "laptop",
-            "mouse",
-            "remote",
-            "keyboard",
-            "cell phone",
-            "microwave",
-            "oven",
-            "toaster",
-            "sink",
-            "refrigerator",
-            "blender",
-            "book",
-            "clock",
-            "vase",
-            "scissors",
-            "teddy bear",
-            "hair drier",
-            "toothbrush",
-            "hair brush"
-    };
+    private static final String COCO_LABELS_FILE = "coco-labels-2017.txt";
 
-    public static void main(String[] params) {
+    private static String[] loadExternalLabels(String labelFileName) throws IOException {
+    /**
+     * Load COCO dataset labels from an extertal text file.
+     */
+        String strFilePath = ClassLoader.getSystemResource(labelFileName).getPath();
+        Path filePath = Paths.get(strFilePath);
+        List<String> lines = Files.lines(filePath).collect(Collectors.toList());
+        String[] labelsArray = lines.toArray(new String[0]);
+        return labelsArray;
+    }
+
+    public static void main(String[] params) throws IOException {
         String outputImagePath;
         String imagePath;
 
@@ -247,13 +170,9 @@ public final class FasterRcnnInception {
         String modelPath = "models/faster_rcnn_inception_resnet_v2_1024x1024";
         // load saved model
         SavedModelBundle model = SavedModelBundle.load(modelPath, "serve");
-        //create a map of the COCO 2017 labels
-        TreeMap<Float, String> cocoTreeMap = new TreeMap<>();
-        float cocoCount = 0;
-        for (String cocoLabel : cocoLabels) {
-            cocoTreeMap.put(cocoCount, cocoLabel);
-            cocoCount++;
-        }
+        //create an array of the COCO 2017 labels
+        String[] cocoArray = loadExternalLabels(COCO_LABELS_FILE);
+        
         try (Graph g = new Graph(); Session s = new Session(g)) {
             Ops tf = Ops.create(g);
             Constant<TString> fileName = tf.constant(imagePath);
