@@ -100,7 +100,6 @@ detection_classes: a tf.int tensor of shape [N] containing detection class index
 but again the actual tensor is DT_FLOAT according to saved_model_cli.
 */
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -136,23 +135,8 @@ import com.google.common.collect.Table;
  */
 public final class FasterRcnnInception {
 
-    public static Table<Integer, String, Float> main(String[] params) throws IOException {
-        String outputImagePath;
-        String imagePath;
+    public static Table<Integer, String, Float> main(String modelPath, String imagePath, String outputImagePath) {
 
-        if (params.length == 0) {
-            imagePath = "src/main/resources/fasterrcnninception/image2.jpg";
-            outputImagePath = "outputs/image2rcnn.jpg";
-
-        } else if (params.length == 2) {
-            imagePath = params[0];
-            outputImagePath = params[1];
-
-        } else {
-            throw new IllegalArgumentException("Exactly 0 or 2 parameters required: java FasterRcnnInception [<input-image-path> <output-image-path>]");
-        }
-        // get path to model folder
-        String modelPath = "models/faster_rcnn_inception_resnet_v2_1024x1024";
         // load saved model
         SavedModelBundle model = SavedModelBundle.load(modelPath, "serve");
 

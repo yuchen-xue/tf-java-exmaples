@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,11 +50,18 @@ public class App {
     public static void main(String[] args) throws IOException {
         switch (args[0]) {
             case "fastrcnn" -> {
-                Table<Integer, String, Float> resultTable = FasterRcnnInception.main(Arrays.stream(args, 1, args.length).toArray(String[]::new));
+                String modelPath = "models/faster_rcnn_inception_resnet_v2_1024x1024";
+                String imagePath = "src/main/resources/fasterrcnninception/image2.jpg";
+                String outputImagePath = "outputs/image2rcnn.jpg";
+                Table<Integer, String, Float> resultTable = FasterRcnnInception.main(modelPath, imagePath, outputImagePath);
                 printTable(resultTable);
             }
-            case "lenet" ->
-                CnnMnist.main(Arrays.stream(args, 1, args.length).toArray(String[]::new));
+            case "lenet" -> {
+                int epochs = 1;
+                int minibatchSize = 64;
+                String optimizerName = "adam";
+                CnnMnist.main(epochs, minibatchSize, optimizerName);
+            }
             case "vgg" ->
                 VGG11OnFashionMnist.main();
             case "linear" ->

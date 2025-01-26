@@ -271,24 +271,7 @@ public final class CnnMnist {
     return idx;
   }
 
-  public static void main(String[] args) {
-    int epochs;
-    int minibatchSize;
-    String optimizerName;
-
-    if (args.length == 0) {
-      epochs = 1;
-      minibatchSize = 64;
-      optimizerName = "adam";
-
-    } else if (args.length == 3) {
-      epochs = Integer.parseInt(args[0]);
-      minibatchSize = Integer.parseInt(args[1]);
-      optimizerName = args[2];
-
-    } else {
-      throw new IllegalArgumentException("Usage: MNISTTest <num-epochs> <minibatch-size> <optimizer-name>");
-    }
+  public static void main(int epochs, int minibatchSize, String optimizerName) {
 
     MnistDataset dataset = MnistDataset.create(0, TRAINING_IMAGES_ARCHIVE, TRAINING_LABELS_ARCHIVE,
             TEST_IMAGES_ARCHIVE, TEST_LABELS_ARCHIVE);
