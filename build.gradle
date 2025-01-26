@@ -13,6 +13,7 @@ def tfVersion = '1.0.0-rc.2'
 dependencies {
     implementation group: 'org.tensorflow', name: 'tensorflow-core-platform', version: tfVersion
     implementation group: 'org.tensorflow', name: 'tensorflow-framework', version: tfVersion
+    implementation group: 'com.google.guava', name: 'guava', version: '33.4.0-jre'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

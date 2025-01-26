@@ -101,14 +101,9 @@ but again the actual tensor is DT_FLOAT according to saved_model_cli.
 */
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.tensorflow.Graph;
 import org.tensorflow.Operand;
@@ -130,6 +125,9 @@ import org.tensorflow.types.TFloat32;
 import org.tensorflow.types.TString;
 import org.tensorflow.types.TUint8;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
 
 /**
  * Loads an image using ReadFile and DecodeJpeg and then uses the saved model
@@ -138,20 +136,7 @@ import org.tensorflow.types.TUint8;
  */
 public final class FasterRcnnInception {
 
-    private static final String COCO_LABELS_FILE = "coco-labels-2017.txt";
-
-    private static String[] loadExternalLabels(String labelFileName) throws IOException {
-    /**
-     * Load COCO dataset labels from an extertal text file.
-     */
-        String strFilePath = ClassLoader.getSystemResource(labelFileName).getPath();
-        Path filePath = Paths.get(strFilePath);
-        List<String> lines = Files.lines(filePath).collect(Collectors.toList());
-        String[] labelsArray = lines.toArray(new String[0]);
-        return labelsArray;
-    }
-
-    public static void main(String[] params) throws IOException {
+    public static Table<Integer, String, Float> main(String[] params) throws IOException {
         String outputImagePath;
         String imagePath;
 
@@ -170,8 +155,9 @@ public final class FasterRcnnInception {
         String modelPath = "models/faster_rcnn_inception_resnet_v2_1024x1024";
         // load saved model
         SavedModelBundle model = SavedModelBundle.load(modelPath, "serve");
-        //create an array of the COCO 2017 labels
-        String[] cocoArray = loadExternalLabels(COCO_LABELS_FILE);
+
+        // Create a table to store the results
+        Table<Integer, String, Float> resultTable = HashBasedTable.create();        
         
         try (Graph g = new Graph(); Session s = new Session(g)) {
             Ops tf = Ops.create(g);
@@ -209,11 +195,6 @@ public final class FasterRcnnInception {
                         TFloat32 detectionClasses = (TFloat32) outputTensorMap.get("detection_classes").get();
                         ArrayList<FloatNdArray> boxArray = new ArrayList<>();
 
-                        // Initialize dynamic containers for collecting detection results
-                        ArrayList<ArrayList<Float>> boxFloatArray = new ArrayList<>();
-                        ArrayList<Float> scoreFloatArray = new ArrayList<> ();
-                        ArrayList<String> detectionClassArray = new ArrayList<> ();
-
                         //TODO tf.image.combinedNonMaxSuppression
                         for (int n = 0; n < numDetects; n++) {
                             //put probability and position in outputMap
@@ -223,18 +204,14 @@ public final class FasterRcnnInception {
                             if (detectionScore > 0.3f) {
                                 FloatNdArray detectionBox = detectionBoxes.get(0, n);
                                 boxArray.add(detectionBox);
-                                System.out.printf("Detection score: %f%n", detectionScore);
-                                System.out.printf("Detection class: %s%n", cocoArray[Math.round(detectionClass) - 1]);
-                                ArrayList<Float> singleBoxFloatArray = new ArrayList<>();
-                                for (int i = 0; i < detectionBox.shape().size(); i++) {
-                                    singleBoxFloatArray.add(detectionBox.getFloat(i));
-                                    System.out.printf("Detection boxes: %f%n", detectionBox.getFloat(i));
-                                }
+
                                 // Collect detection results
-                                boxFloatArray.add(singleBoxFloatArray);
-                                scoreFloatArray.add(detectionScore);
-                                detectionClassArray.add(cocoArray[Math.round(detectionClass) - 1]);
-                                System.out.println("----------------");
+                                resultTable.put(n, "detection_class", detectionClass);
+                                resultTable.put(n, "detection_score", detectionScore);
+                                resultTable.put(n, "ymin", detectionBox.getFloat(0));
+                                resultTable.put(n, "xmin", detectionBox.getFloat(1));
+                                resultTable.put(n, "ymax", detectionBox.getFloat(2));
+                                resultTable.put(n, "xmax", detectionBox.getFloat(3));
                             }
                         }
                         /* These values are also returned by the FasterRCNN, but we don't use them in this example.
@@ -295,5 +272,6 @@ public final class FasterRcnnInception {
                 }
             }
         }
+        return resultTable;
     }
 }
