@@ -2,6 +2,10 @@ package org.tensorflow.model.examples;
 
 import java.io.IOException;
 
+import org.tensorflow.SavedModelBundle;
+import org.tensorflow.Graph;
+import org.tensorflow.op.Ops;
+
 import org.tensorflow.model.examples.cnn.fastrcnn.DetectionResultParser;
 import org.tensorflow.model.examples.cnn.fastrcnn.FasterRcnnInception;
 import org.tensorflow.model.examples.cnn.lenet.CnnMnist;
@@ -37,11 +41,21 @@ public class App {
     public static void main(String[] args) throws IOException {
         switch (args[0]) {
             case "fastrcnn" -> {
+                // load saved model
                 String modelPath = "models/faster_rcnn_inception_resnet_v2_1024x1024";
-                String imagePath = "src/main/resources/fasterrcnninception/image2.jpg";
-                String outputImagePath = "outputs/image2rcnn.jpg";
-                Table<Integer, String, Float> resultTable = FasterRcnnInception.main(modelPath, imagePath, outputImagePath);
-                printTable(resultTable);
+                SavedModelBundle model = SavedModelBundle.load(modelPath, "serve");
+
+                // TF computing things
+                Graph g = new Graph();
+                Ops tf = Ops.create(g);
+
+                // Run detection task on multiple images
+                for (int i = 0; i < 2; i++) {
+                    String imagePath = String.format("testimages/image%d.jpg", i);
+                    String outputImagePath = String.format("outputs/image%drcnn.jpg", i);
+                    Table<Integer, String, Float> resultTable = FasterRcnnInception.runDetectionTask(model, g, tf, imagePath, outputImagePath);
+                    printTable(resultTable);
+                }
             }
             case "lenet" -> {
                 int epochs = 1;

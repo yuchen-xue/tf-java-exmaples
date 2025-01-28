@@ -241,10 +241,10 @@ public final class FasterRcnnInception {
         return resultTable;
     }
 
-    private static Table<Integer, String, Float> runDetectionTask(SavedModelBundle model, Session s, Ops tf,
+    public static Table<Integer, String, Float> runDetectionTask(SavedModelBundle model, Graph g, Ops tf,
             String imagePath, String outputImagePath) {
 
-        try (s) {
+        try (Session s = new Session(g)) {
             DecodeJpeg decodeImage = getDecodedImage(tf, imagePath);
 
             Shape imageShape;
@@ -259,6 +259,7 @@ public final class FasterRcnnInception {
                             imageShape.asArray()[1],
                             imageShape.asArray()[2]));
 
+            // Run the model, collect the result and save the output image
             try (var reshapeResult = s.runner().fetch(reshape).run()) {
                 TUint8 reshapeTensor = (TUint8) reshapeResult.get(0);
                 Map<String, Tensor> feedDict = new HashMap<>();
@@ -272,19 +273,5 @@ public final class FasterRcnnInception {
                 }
             }
         }
-    }
-
-    public static Table<Integer, String, Float> main(String modelPath, String imagePath, String outputImagePath) {
-
-        // load saved model
-        SavedModelBundle model = SavedModelBundle.load(modelPath, "serve");
-
-        // TF computing things
-        Graph g = new Graph();
-        Session s = new Session(g);
-        Ops tf = Ops.create(g);
-
-        // Run the detection task and collect the results as a Guava Table.
-        return runDetectionTask(model, s, tf, imagePath, outputImagePath);
     }
 }
